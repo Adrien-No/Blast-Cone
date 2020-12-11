@@ -19,4 +19,3 @@ je lance le programme, mon bot se connecte et envoi un message sur tout les serv
 
 
 je ferme le programme/le programme plante : j'envoie un message à tout les serveurs
-test
