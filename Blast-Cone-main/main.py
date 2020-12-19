@@ -1,8 +1,10 @@
 import csv, aiohttp, json, asyncio, discord
 from discord.ext import commands
 
-api_key_riot = 'RGAPI-52541b27-ec68-4ff8-afaf-340fb85352bb'
-api_key_discord = 'NzQ5MzgyNDc2OTEyMjYzMjg5.X0rK0Q.P7LoKQrS-GH1p1erfwpLA7gikpo'
+with open('donnees/tokens.json', 'r') as tokens:
+    informations = json.load(tokens)
+    api_key_riot = informations['api_key_riot']
+    api_key_discord = informations['api_key_discord']
 api_version_riot = 'v4'
 discord_id_adrifirst = 346632637143842817
 #on ajoute le dictionnaire qui permet de relié une donnée de région entrée par l'utilisateur à la véritable syntaxe de la région
