@@ -19,3 +19,10 @@ je lance le programme, mon bot se connecte et envoi un message sur tout les serv
 
 
 je ferme le programme/le programme plante : j'envoie un message à tout les serveurs
+
+
+
+
+à regarder/rajouter:
+- gérer les exceptions (message d'erreur adressé à l'utilisateur, pas dans le shell)
+- modifier la commande .help pré-créée

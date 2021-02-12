@@ -1,14 +1,17 @@
 import csv, aiohttp, json, asyncio, discord
 from discord.ext import commands
+from emoji import EMOJI_ALIAS_UNICODE as emojis
 
+#fichier avec les clés, non envoyé quand on push to git
 with open('donnees/tokens.json', 'r') as tokens:
     informations = json.load(tokens)
     api_key_riot = informations['api_key_riot']
     api_key_discord = informations['api_key_discord']
 api_version_riot = 'v4'
 discord_id_adrifirst = 346632637143842817
-#on ajoute le dictionnaire qui permet de relié une donnée de région entrée par l'utilisateur à la véritable syntaxe de la région
-all_my_dicts = {'region': {"br":"br1", "eun":"eun1", "euw":"euw1", "jp" :"jp1", "kr":"kr", "la1":"la1", "la2":"la2", "na":"na1", "oc":"oc1","tr":"tr1","ru":"ru" } }
+
+#on ajoute le dictionnaire qui permet de relier une donnée de région entrée par l'utilisateur à la véritable syntaxe de la région
+amd = {'region': {"br":"br1", "eun":"eun1", "euw":"euw1", "jp" :"jp1", "kr":"kr", "la1":"la1", "la2":"la2", "na":"na1", "oc":"oc1","tr":"tr1","ru":"ru" } }
 
 #on récupère les données du fichier csv
 statut_guild_channel = {}
@@ -23,13 +26,13 @@ with open('donnees/help.txt', 'r') as file:
     
 async def dict_build(URL,name):
     '''
-    This function is used each time we want to execute a web request by using an URL (first arg) to extract a json file and create a dictionnaty.
-    (name) will be the key to acces to this new dict from 'all_my_dicts'.
+    This function is used each time we want to execute a web request by using an URL (first arg) to extract a json file and create a dictionnary.
+    (name) will be the key to acces to this new dict from 'amd'(all_my_dicts).
     '''
     
     async with aiohttp.ClientSession() as client:
         async with client.get(URL) as url:
-            all_my_dicts[name] = await url.json()
+            amd[name] = await url.json()
 
 #<================================================================== commands ===================================================================>#
             
@@ -48,7 +51,23 @@ async def on_ready():
     for key,value in statut_guild_channel.items():
         channel=bot.get_channel(int(value))
         await channel.send('**:green_circle:   Connected !     :green_circle:**')
-    
+
+#I would like to modify the content of an embed when a reaction is added
+@bot.event
+async def on_raw_reaction_add(payload):
+    #check if user isn't a bot. faudrait aussi tester que c'est bien un embed et créé par game_info
+    if payload.member.bot == False:
+        #on va chercher le channel textuel à partir de son id avec le client(bot)
+        channel = bot.get_channel(payload.channel_id)
+        #on va récupère le message à partir de son id
+        message= await channel.fetch_message(payload.message_id)
+        
+        embed2 = message.embeds[0].add_field(name='zebi',value='pump it up',inline=True)
+        await message.edit(embed=embed2)
+
+        #faut faire les differents cas en fonction de la réaction ajoutée (on peut utiliser une fonction) puis garder les 2premiers add field
+        #et supprimer si y'a un 3e car ce sera les info d'un autre invocateur
+        
 @bot.command()
 async def stop(ctx):
     global statut_guild_channel
@@ -84,26 +103,50 @@ async def set_statut_channel(ctx):
     await ctx.send(f'Le channel #{ctx.channel.name} (id : {ctx.channel.id}) à été défini comme channel de statut (bot connecté/déconnecté) \
 pour le serveur {ctx.guild.name} (id : {ctx.guild.id}) ')
 
+#played champ doit être avec la maj au début + faire gaffe à wukong
+async def embed_sum(sum_name):
+    '''create an embed about a specific summoner'''
+    #we check if the summoner is in game or not
+    #...
+    embed=discord.Embed(title="link to op.gg", url=f"https://euw.op.gg/summoner/userName=sum_name", description="rank in soloQ and xxx mastery points with actually champ")
+    embed.set_author(name=sum_name, icon_url="http://ddragon.leagueoflegends.com/cdn/11.3.1/img/profileicon/588.png")
+    embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{played_champ}_0.jpg")
+
+    embed.add_field(name="Countertips", value="mettre des wards", inline=False)
+    embed.set_footer(text="react to get more tips")
+    return embed
 #<=====================================================================>#
 
-@bot.command()
+@bot.command(aliases=['commands','cmds'])
 async def helplease(ctx):
     await ctx.send(help_message)
 
-@bot.command()
-async def game_info(ctx, summoner_name, region='euw'):
+@bot.command(aliases=['gi'])
+async def game_info(ctx, summoner_name.lower(), region='euw'):
     #dict account
-    await dict_build(f"https://{all_my_dicts['region'][region]}.api.riotgames.com/lol/summoner/{api_version_riot}/summoners/by-name/{summoner_name}?api_key={api_key_riot}",'profile_{summoner_name}')
+    
+    await dict_build(f"https://{amd['region'][region]}.api.riotgames.com/lol/summoner/{api_version_riot}/summoners/by-name/{summoner_name}?api_key={api_key_riot}",'{summoner_name}')
+
     #dict spectator
-    await dict_build(f"https://{all_my_dicts['region'][region]}.api.riotgames.com/lol/spectator/{api_version_riot}/active-games/by-summoner/{all_my_dicts['profile_{summoner_name}']['id']}?api_key={api_key_riot}",'spectator')
-    print(f"https://{all_my_dicts['region'][region]}.api.riotgames.com/lol/spectator/{api_version_riot}/active-games/by-summoner/{all_my_dicts['profile_{summoner_name}']['id']}?api_key={api_key_riot}")
-    embed_menu = discord.Embed(title=f"List of summoners in {all_my_dicts['profile_{summoner_name}']['name']}'s game :")
-    
-    embed_menu.add_field(name='**red team**', value=f":one:{all_my_dicts['spectator']}\n:two:{s2}\n:three:{s3}\n:four:{s4}\n:five:{s5}'.format(s1=summoner0.Name(0),s2=summoner0.Name(1),s3=summoner0.Name(2),s4=summoner0.Name(3),s5=summoner0.Name(4)),inline=True")
-    embed_menu.add_field(name='**blue team**',value=':six:{s6}\n:seven:{s7}\n:eight:{s8}\n:nine:{s9}\n:keycap_ten:{s10}'.format(s6=summoner0.Name(5),s7=summoner0.Name(6),s8=summoner0.Name(7),s9=summoner0.Name(8),s10=summoner0.Name(9)),inline=True)
+    await dict_build(f"https://{amd['region'][region]}.api.riotgames.com/lol/spectator/{api_version_riot}/active-games/by-summoner/{amd['{summoner_name}']['id']}?api_key={api_key_riot}",'spectator_{summoner_name}')
+    print(f"https://{amd['region'][region]}.api.riotgames.com/lol/spectator/{api_version_riot}/active-games/by-summoner/{amd['profile_{summoner_name}']['id']}?api_key={api_key_riot}")
+    #envoi de l'embed de départ
+    embed_menu = discord.Embed(title=f"List of summoners in {amd['profile_{summoner_name}']['name']}'s game :")
+    #on crée un dic comprenant les participants
+    participants = {}
+    for i_sum in range(10):
+        participants[amd['spectator_{summoner_name}']['participants'][i_sum]['summonerName']]
+    embed_menu.add_field(name='**blue team**', value=f":one:{amd['spectator_{summoner_name}']['participants'][0]['summonerName']}\n:two:{amd['spectator_{summoner_name}']['participants'][1]['summonerName']}\n:three:{amd['spectator_{summoner_name}']['participants'][2]['summonerName']}\n:four:{amd['spectator_{summoner_name}']['participants'][3]['summonerName']}\n:five:{amd['spectator_{summoner_name}']['participants'][4]['summonerName']}",inline=True)
+    embed_menu.add_field(name='**red team**',value=f":six:{amd['spectator_{summoner_name}']['participants'][5]['summonerName']}\n:seven:{amd['spectator_{summoner_name}']['participants'][6]['summonerName']}\n:eight:{amd['spectator_{summoner_name}']['participants'][7]['summonerName']}\n:nine:{amd['spectator_{summoner_name}']['participants'][8]['summonerName']}\n:keycap_ten:{amd['spectator_{summoner_name}']['participants'][9]['summonerName']}",inline=True)
     embed_menu.set_footer(text="react to get more tips")
+    print(ctx.message)
+    msg_embed = await ctx.send(embed=embed_menu)
+    #ajout des réactions associés au numéro de joueur
+    listEmojisNumbers=[emojis[':one:'],emojis[':two:'],emojis[':three:'],emojis[':four:'],emojis[':five:'],emojis[':six:'],emojis[':seven:'],emojis[':eight:'],emojis[':nine:'],'🔟']
+    for i in range(len(amd['spectator']['participants'])):
+        await msg_embed.add_reaction(listEmojisNumbers[i])
     
-    await ctx.send(embed=embed_menu)
+    
 #<===============================================================================================================================================>#
 
 bot.run(api_key_discord)
