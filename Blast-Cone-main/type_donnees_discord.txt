@@ -5,7 +5,7 @@ event_type='REACTION_ADD'
 member=<Member id=749382476912263289 name='Blast Cone' discriminator='8118' bot=True nick=None 
 guild=<Guild id=505477568195985411 name='happy gang' shard_id=None chunked=False member_count=38>>>
 
-#ctx
+#context
 class discord.ext.commands.Context(**attrs)
 <Message id=807718622146723900 
 channel=<TextChannel id=525382426252279809 name='bots' position=3 nsfw=False news=False category_id=536554593572880404> 
