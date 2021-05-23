@@ -1,0 +1,13 @@
+:arrow_right:  **general commands**
+
+> .helplease | **displays this menu.**
+
+:arrow_right:  **pre-game informations**
+
+> **.tips (summonername) [server] [language] ** | Send tips to play against and with champs in summonername's game
+
+example of using:
+.tips yasuomain
+.tips yasuomain euw fr_FR
+
+note : parameters entre crochet `[]` are optionnal (default server=euw language=fr_FR)
