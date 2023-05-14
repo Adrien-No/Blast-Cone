@@ -10,4 +10,5 @@ example of using:
 .tips yasuomain
 .tips yasuomain euw fr_FR
 
-note : parameters entre crochet `[]` are optionnal (default server=euw language=fr_FR)
+note 1 : Parameters in brackets `[]` are optionnal (default : server=euw, language=fr_FR).
+note 2 : Summonernames are case-insensitive and DO NOT REQUIRE SPACES " "

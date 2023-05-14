@@ -12,13 +12,18 @@ region_code = {"br": "br1", "eun": "eun1", "euw": "euw1", "jp": "jp1", "kr": "kr
 get_champ_id = {}
 
 # on ajoute les clés d'api
-with open(os.getcwd()+'\\donnees\\tokens.json','r') as tokens:
+with open(os.getcwd()+'/donnees/tokens.json','r') as tokens:
     informations = json.load(tokens)
     api_key_riot = informations['api_key_riot']
     api_key_discord = informations['api_key_discord']
 
+# ajout de l'id discord de l'owner
+with open(os.getcwd()+'/donnees/pseudo.json', 'r') as pseudo:
+    informations = json.load(pseudo)
+    pseudo_founder = informations['id_founder']
+
 # help message
-with open(os.getcwd()+'\\donnees\\help.txt', 'r') as file:
+with open(os.getcwd()+'/donnees/help.txt', 'r') as file:
     help_message = file.read()
 # instanciation de la classe lol_watcher permettant d'effectuer des recherches web (API riot)
 lol_watcher = LolWatcher(api_key_riot)
@@ -75,7 +80,7 @@ async def on_ready():
 @bot.command()
 async def stop(ctx):
     '''only me can use this :devil:'''
-    if ctx.message.author.id == 346632637143842817:
+    if ctx.message.author.id == pseudo_founder:
         await bot.logout()
 
 @bot.command(aliases=['cmds', 'h', 'helps', 'helplease', 'amlost'])
